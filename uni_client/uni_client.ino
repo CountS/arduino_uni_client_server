@@ -62,11 +62,11 @@ const int transmit_en_pin = 3;
 String RSinputString = "";         // a string to hold incoming data
 boolean RSinputStringComplete = false;  // whether the string is complete
 
-const boolean server = false; //set "true" if it's a server 
+const boolean server = true; //set "true" if it's a server 
 
 
 byte count = 1;
-byte device = 1;
+byte device = 0;
 byte mode=1; //0 - режим A, 1 - режим B, 2 -режим C
 int i;
 int cmd;
@@ -140,55 +140,60 @@ void loop()
   }
   else if (mode==1){
     if (server){ //код сервера
-    
-       vw_wait_rx();
-      if (vw_get_message(buf, &buflen)) // Non-blocking
-      {
-        if (buf[3]==device || buf[3]==0)
-        {
-          if (buf[5]==1) //GET Command
-          {  
-            Serial.println("server recived GET COMMEAND");
-            if (RSinputStringComplete)
-            {
-              Serial.println("server has something to tell... ");
-            msg[0] = count; count++;
-            msg[1] = device;
-            msg[3] = RSinputString[3];
-            msg[5] = RSinputString[5];
-            msg[6] = RSinputString[6];
-            msg[7] = RSinputString[7];
-            vw_send((uint8_t *)msg, 26);
-            vw_wait_tx(); // Wait until the whole message is gone  
-            Serial.println("server send command");
-            }
-            else
-            {
-            Serial.println("server has nothing to send ");  
-            msg[0] = count; count++;
-            msg[1] = device;
-            msg[3] = buf[1];
-            msg[4] = 9;
-            msg[5] = 1;
-            vw_send((uint8_t *)msg, 26);
-            vw_wait_tx(); // Wait until the whole message is gone  
-            Serial.println("server send NOP ");
-            }  
-            
-          } 
-          if (buf[5]==21) //DIG
-          {  
-          } 
-          if (buf[5]==23) //ANALOG
-          {  
-          } 
-          if (buf[5]==25) //LCD
-          {  
-          } 
-       
-        }
 
+//      vw_wait_rx();
+      if (vw_wait_rx_max(1000)){
+        if (vw_get_message(buf, &buflen)) // Non-blocking
+        {
+          if (buf[3]==device || buf[3]==0)
+          {
+            if (buf[5]==1) //GET Command
+            {  
+//            Serial.println("server recived GET COMMAND from d#"||buf[3]||" n#"||buf[0]);
+              Serial.println("server recived GET COMMAND from");
+              Serial.println(buf[0]);            
+              Serial.println(buf[3]);                        
+              if (RSinputStringComplete)
+              {
+                Serial.println("server has something to tell... ");
+                msg[0] = count; count++;
+                msg[1] = device;
+                msg[3] = RSinputString[3];
+                msg[5] = RSinputString[5];
+                msg[6] = RSinputString[6];
+                msg[7] = RSinputString[7];
+                vw_send((uint8_t *)msg, 26);
+                vw_wait_tx(); // Wait until the whole message is gone  
+                Serial.println("server send command");
+              }
+              else
+              {
+              Serial.println("server has nothing to send ");  
+              msg[0] = count; count++;
+              msg[1] = device;
+              msg[3] = buf[1];
+              msg[4] = 9;
+              msg[5] = 1;
+              vw_send((uint8_t *)msg, 26);
+              vw_wait_tx(); // Wait until the whole message is gone  
+              Serial.println("server send NOP ");
+              }  
+            
+            } 
+            if (buf[5]==21) //DIG
+            {  
+            } 
+            if (buf[5]==23) //ANALOG
+            {  
+            } 
+            if (buf[5]==25) //LCD
+            {  
+            } 
        
+          }
+          
+
+        }
         
       }
     }
@@ -204,7 +209,8 @@ void loop()
     vw_send((uint8_t *)msg, 26);
     vw_wait_tx(); // Wait until the whole message is gone 
     Serial.println("client send GET COMMAND (1), waiting...");
-    vw_wait_rx();
+//  vw_wait_rx();   
+    if (vw_wait_rx_max(1000)){
       if (vw_get_message(buf, &buflen)) // Non-blocking
       {
         if (buf[3]==device || buf[3]==0)
@@ -251,7 +257,7 @@ void loop()
       }
     
       
-    
+    }
     }
 
   }
