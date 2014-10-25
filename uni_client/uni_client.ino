@@ -236,7 +236,7 @@ void loop()
             vw_wait_tx(); // Wait until the whole message is gone  
             Serial.println("client confirmed ");           
           } 
-          if (buf[5]==21) //DIG
+          if (buf[5]==2) //DIG
           {  
             Serial.println("client recived SET DIGITAL ");
             digitalWrite(buf[6], buf[7]);
@@ -252,10 +252,10 @@ void loop()
             vw_wait_tx(); // Wait until the whole message is gone  
             Serial.println("client confirmed ");
           } 
-          if (buf[5]==23) //ANALOG
+          if (buf[5]==4) //ANALOG
           {  
           } 
-          if (buf[5]==25) //LCD
+          if (buf[5]==6) //LCD
           {  
           } 
        
