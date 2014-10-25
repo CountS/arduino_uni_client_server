@@ -39,15 +39,12 @@
   сервер - клиенту
   0 - команда-расширение.
   1 - NOP 
-  2-10 - резерв
-  
-  21 - изменить состояние входов. Передается новое стостояние (по байтам, только логические 1-0) - описать подробнее
-  22 - резерв
-  23 - изменить состояние аналогового выхода. Нагрузка - номер выхода (6), новое состояние(7) 
-  24 - резерв
-
-  25 - вывести текст на LCD. Нагрузка - текст для вывода (включая команды форматирования и служебные)
-  
+  2 - изменить состояние входов. Передается новое стостояние (по байтам, только логические 1-0) - описать подробнее
+  3 - резерв
+  4 - изменить состояние аналогового выхода. Нагрузка - номер выхода (6), новое состояние(7) 
+  5 - резерв
+  6 - вывести текст на LCD. Нагрузка - текст для вывода (включая команды форматирования и служебные)
+  7-9 - резерв  
     
 */
 
@@ -145,14 +142,19 @@ void loop()
       if (vw_wait_rx_max(1000)){
         if (vw_get_message(buf, &buflen)) // Non-blocking
         {
+              Serial.println(">>>");                      
+              Serial.println(buf[0]);            
+              Serial.println(buf[1]);                          
+              Serial.println(buf[3]);                        
+              Serial.println(buf[5]);                                        
+              Serial.println(buf[6]);                                        
+          
           if (buf[3]==device || buf[3]==0)
           {
             if (buf[5]==1) //GET Command
             {  
 //            Serial.println("server recived GET COMMAND from d#"||buf[3]||" n#"||buf[0]);
-              Serial.println("server recived GET COMMAND from");
-              Serial.println(buf[0]);            
-              Serial.println(buf[3]);                        
+              Serial.println("server recived GET COMMAND");
               if (RSinputStringComplete)
               {
                 Serial.println("server has something to tell... ");
@@ -180,13 +182,13 @@ void loop()
               }  
             
             } 
-            if (buf[5]==21) //DIG
+            if (buf[5]==11) //DIG - изменилось состояни логического входа
             {  
             } 
-            if (buf[5]==23) //ANALOG
+            if (buf[5]==13) //ANALOG - изменилось состояние аналогового входа
             {  
             } 
-            if (buf[5]==25) //LCD
+            if (buf[5]==14) //CARD - считана карта на клиенте
             {  
             } 
        
@@ -213,6 +215,13 @@ void loop()
     if (vw_wait_rx_max(1000)){
       if (vw_get_message(buf, &buflen)) // Non-blocking
       {
+              Serial.println(">>>");                      
+              Serial.println(buf[0]);            
+              Serial.println(buf[1]);                          
+              Serial.println(buf[3]);                        
+              Serial.println(buf[5]);                                        
+              Serial.println(buf[6]);                                        
+        
         if (buf[3]==device || buf[3]==0)
         {
           if (buf[5]==1) //NOP
