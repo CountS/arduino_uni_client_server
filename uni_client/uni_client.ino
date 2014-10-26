@@ -76,8 +76,8 @@ char msg[26] = {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',
 //               3 - адрес получателя.  если 0 то это бродкаст
 //               4 - резерв / контрольный 
 //               5 - тип команды
-//               6 - 19 нагрузки
-//               
+//               6 - F нагрузки
+//          включить 9й диод на клиенте 2 - 00020291
 
 
 
@@ -143,11 +143,11 @@ void loop()
         if (vw_get_message(buf, &buflen)) // Non-blocking
         {
               Serial.println(">>>");                      
-              Serial.println(buf[0]);            
-              Serial.println(buf[1]);                          
-              Serial.println(buf[3]);                        
-              Serial.println(buf[5]);                                        
-              Serial.println(buf[6]);                                        
+              Serial.write(buf[0]);            
+              Serial.write(buf[1]);                          
+              Serial.write(buf[3]);                        
+              Serial.write(buf[5]);                                        
+              Serial.write(buf[6]);                                        
           
           if (buf[3]==device || buf[3]==0)
           {
@@ -158,12 +158,16 @@ void loop()
               if (RSinputStringComplete)
               {
                 Serial.println("server has something to tell... ");
+                Serial.println((RSinputString[3]));
+                Serial.println((RSinputString[5]));
+                Serial.println((RSinputString[6]));
+                Serial.println((RSinputString[7]));                
                 msg[0] = count; count++;
                 msg[1] = device;
-                msg[3] = RSinputString[3];
-                msg[5] = RSinputString[5];
-                msg[6] = RSinputString[6];
-                msg[7] = RSinputString[7];
+                msg[3] = ((RSinputString[3]));
+                msg[5] = ((RSinputString[5]));
+                msg[6] = ((RSinputString[6]));
+                msg[7] = ((RSinputString[7]));
                 vw_send((uint8_t *)msg, 26);
                 vw_wait_tx(); // Wait until the whole message is gone  
                 Serial.println("server send command");
@@ -216,11 +220,11 @@ void loop()
       if (vw_get_message(buf, &buflen)) // Non-blocking
       {
               Serial.println(">>>");                      
-              Serial.println(buf[0]);            
-              Serial.println(buf[1]);                          
-              Serial.println(buf[3]);                        
-              Serial.println(buf[5]);                                        
-              Serial.println(buf[6]);                                        
+              Serial.write(buf[0]);            
+              Serial.write(buf[1]);                          
+              Serial.write(buf[3]);                        
+              Serial.write(buf[5]);                                        
+              Serial.write(buf[6]);                                        
         
         if (buf[3]==device || buf[3]==0)
         {
