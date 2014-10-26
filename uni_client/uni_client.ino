@@ -56,11 +56,11 @@ const int transmit_en_pin = 3;
 String RSinputString = "";         // a string to hold incoming data
 boolean RSinputStringComplete = false;  // whether the string is complete
 
-const boolean server = true; //set "true" if it's a server 
+const boolean server = false; //set "true" if it's a server 
 
 
 byte count = 1;
-byte device = 0;
+byte device = 2;
 byte mode=1; //0 - режим A, 1 - режим B, 2 -режим C
 int i;
 int cmd;
@@ -217,16 +217,29 @@ void loop()
       if (vw_get_message(buf, &buflen)) // Non-blocking
       {
               Serial.println(">>>");                      
-              Serial.write(buf[0]);            
+              Serial.println(int(buf[0]));            
+              Serial.println(">>>");                      
               Serial.write(buf[1]);                          
+              Serial.println(">>>");                      
               Serial.write(buf[3]);                        
+              Serial.println(">>>");                      
               Serial.write(buf[5]);                                        
-              Serial.write(buf[6]);                                        
-        
-        if (buf[3]==device || buf[3]==0)
+              Serial.println(">>>");                      
+              Serial.write(buf[6]);   
+              Serial.println(">>>");                      
+              Serial.write(buf[7]);                     
+              Serial.println(">>>");                      
+             
+      //  if (int(buf[3])==device || int(buf[3])==0)
+        if (int(buf[3])==device)
         {
-          if (buf[5]==1) //NOP
+           Serial.println("command: ");
+           Serial.println(int(buf[5]));
+
+          if (int(buf[5])==1) //NOP
           {  
+          
+            
             Serial.println("client recived NOP ");
             msg[0] = count; count++;
             msg[1] = device;
@@ -237,21 +250,38 @@ void loop()
             vw_wait_tx(); // Wait until the whole message is gone  
             Serial.println("client confirmed ");           
           } 
-          if (buf[5]==2) //DIG
+          if (int(buf[5])==2) //DIG
           {  
             Serial.println("client recived SET DIGITAL ");
-            digitalWrite(buf[6], buf[7]);
+            digitalWrite(int(buf[6]), int(buf[7]));
             
             msg[0] = count; count++;
             msg[1] = device;
             msg[3] = 0;
             msg[4] = 9;
-            msg[5] = 11;
+            msg[5] = 3;
             msg[6] = buf[6];
             msg[7] = buf[7];
             vw_send((uint8_t *)msg, 26);
-            vw_wait_tx(); // Wait until the whole message is gone  
+            vw_wait_tx();
+          //  vw_send((uint8_t *)msg, 26);
+              Serial.println(">>>");                      
+              Serial.println(msg[0]);            
+              Serial.println(">>>");                      
+              Serial.println(msg[1]);                          
+              Serial.println(">>>");                      
+              Serial.println(msg[3]);                        
+              Serial.println(">>>");                      
+              Serial.println(int(msg[5]));                                        
+              Serial.println(">>>");                      
+              Serial.println(msg[6]);   
+              Serial.println(">>>");                      
+              Serial.println(msg[7]);                     
+              Serial.println(">>>");       
+              
+          //  vw_wait_tx(); // Wait until the whole message is gone  
             Serial.println("client confirmed ");
+          //  delay(600000);
           } 
           if (buf[5]==4) //ANALOG
           {  
