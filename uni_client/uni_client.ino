@@ -30,21 +30,18 @@
   клиент - серверу
   0 - команда-расширение.
   1 - получить команду. Нагрузка - нет
-  2-10 - резерв
-  11 - изменение состояния выходов. Нагрузка - старое и новое состояние выходов (по байтам, только логические 1-0)  - описать подробнее
-  12 - изменение температуры. Нагрузка - номер датчика, старое и новое состояние температуры
-  13 - изменение состояние аналогового входа. Нагрузка - номер датчика, старое и новое состояние
-  14 - считана карта. Нагрузка - считанный номер.
+  3 - изменение состояния выходов. Нагрузка - старое и новое состояние выходов (по байтам, только логические 1-0)  - описать подробнее
+  5 - изменение температуры. Нагрузка - номер датчика, старое и новое состояние температуры
+  7 - изменение состояние аналогового входа. Нагрузка - номер датчика, старое и новое состояние
+  8 - считана карта. Нагрузка - считанный номер.
   
   сервер - клиенту
   0 - команда-расширение.
   1 - NOP 
   2 - изменить состояние входов. Передается новое стостояние (по байтам, только логические 1-0) - описать подробнее
-  3 - резерв
   4 - изменить состояние аналогового выхода. Нагрузка - номер выхода (6), новое состояние(7) 
-  5 - резерв
   6 - вывести текст на LCD. Нагрузка - текст для вывода (включая команды форматирования и служебные)
-  7-9 - резерв  
+
     
 */
 
@@ -101,7 +98,7 @@ void setup()
   vw_set_ptt_inverted(true); // Required for DR3100
   vw_setup(2000);	 // Bits per sec
   vw_rx_start();       // Start the receiver PLL running
- Serial.begin(9600);
+  Serial.begin(9600);
   Serial.println("start....");
   Serial.println("");  
 }
@@ -137,21 +134,22 @@ void loop()
   }
   else if (mode==1){
     if (server){ //код сервера
-
 //      vw_wait_rx();
       if (vw_wait_rx_max(1000)){
         if (vw_get_message(buf, &buflen)) // Non-blocking
         {
-              Serial.println(">>>");                      
-              Serial.write(buf[0]);            
-              Serial.write(buf[1]);                          
-              Serial.write(buf[3]);                        
-              Serial.write(buf[5]);                                        
-              Serial.write(buf[6]);                                        
           
-          if (buf[3]==device || buf[3]==0)
+          if (int(buf[3])==device || int(buf[3])==0)
           {
-            if (buf[5]==1) //GET Command
+            if (int(buf[5])==3) //DIG - изменилось состояни логического входа
+            {  
+              Serial.println("client send DIG ");
+              Serial.println(int(buf[6]));                                        
+              Serial.println(int(buf[7]));                                                      
+              
+            } 
+ 
+            if (int(buf[5])==1) //GET Command
             {  
 //            Serial.println("server recived GET COMMAND from d#"||buf[3]||" n#"||buf[0]);
               Serial.println("server recived GET COMMAND");
@@ -164,12 +162,14 @@ void loop()
                 Serial.println((RSinputString[7]));                
                 msg[0] = count; count++;
                 msg[1] = device;
-                msg[3] = ((RSinputString[3]));
-                msg[5] = ((RSinputString[5]));
-                msg[6] = ((RSinputString[6]));
-                msg[7] = ((RSinputString[7]));
+                msg[3] = ((RSinputString[3]))-48;
+                msg[5] = ((RSinputString[5]))-48;
+                msg[6] = ((RSinputString[6]))-48;
+                msg[7] = ((RSinputString[7]))-48;
                 vw_send((uint8_t *)msg, 26);
                 vw_wait_tx(); // Wait until the whole message is gone  
+                RSinputStringComplete=false;
+                RSinputString="";
                 Serial.println("server send command");
               }
               else
@@ -185,9 +185,6 @@ void loop()
               Serial.println("server send NOP ");
               }  
             
-            } 
-            if (buf[5]==11) //DIG - изменилось состояни логического входа
-            {  
             } 
             if (buf[5]==13) //ANALOG - изменилось состояние аналогового входа
             {  
